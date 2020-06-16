@@ -1,0 +1,52 @@
+version: '3'
+services:
+  postgres:
+    image: 'postgres:12.3'
+    container_name: postgres_container
+    environment:
+      POSTGRES_DB: metabase
+      POSTGRES_USER: postgres_user
+      POSTGRES_PASSWORD: postgres_password
+      #HOST_NAME: postgreshost
+    networks:
+      postgresnet:
+        ipv4_address: 172.16.0.16
+    ports:
+      - '5433:5432'
+  metabase:
+    image: 'metabase/metabase:latest'
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: postgres_user
+      MB_DB_PASS: postgres_password
+      MB_DB_HOST: 172.16.0.16
+
+    networks:
+      postgresnet:
+        ipv4_address: 172.16.0.22
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+
+networks:
+  postgresnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.0.0/24
+
+
+        
+        
+# 1) Create network
+#   $ docker network create --subnet: 172.18.0.0/16 mynet123       
+# 2) Create container inside the network
+#   $ docker run --net mynet123 -h myhostname --ip 172.18.0.22 -it ubuntu bash
+# Flags:
+#  --net connect a container to a network
+#  --ip to specify IPv4 address
+#  -h, --hostname to specify a hostname
+#  --add-host to add more entries to /etc/hosts
